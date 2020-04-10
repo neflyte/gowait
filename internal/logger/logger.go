@@ -20,11 +20,11 @@ func init() {
 	Logger.SetOutput(os.Stdout)
 }
 
-func WithField(fieldName, fieldValue string) *logrus.Entry {
+func WithField(fieldName, fieldValue string) logrus.FieldLogger {
 	return Logger.WithField(fieldName, fieldValue)
 }
 
-func WithFields(fields map[string]interface{}) *logrus.Entry {
+func WithFields(fields map[string]interface{}) logrus.FieldLogger {
 	lf := logrus.Fields{}
 	for key, intf := range fields {
 		lf[key] = intf
@@ -32,14 +32,14 @@ func WithFields(fields map[string]interface{}) *logrus.Entry {
 	return Logger.WithFields(lf)
 }
 
-func AddField(logger *logrus.Entry, fieldName, fieldValue string) *logrus.Entry {
+func AddField(logger logrus.FieldLogger, fieldName, fieldValue string) logrus.FieldLogger {
 	if logger == nil {
 		return WithField(fieldName, fieldValue)
 	}
 	return logger.WithField(fieldName, fieldValue)
 }
 
-func AddFields(logger *logrus.Entry, fields map[string]interface{}) *logrus.Entry {
+func AddFields(logger logrus.FieldLogger, fields map[string]interface{}) logrus.FieldLogger {
 	if logger == nil {
 		return WithFields(fields)
 	}

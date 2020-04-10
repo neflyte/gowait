@@ -11,7 +11,6 @@ type Waiter interface {
 }
 
 func Wait(url url.URL, retryDelay time.Duration, retryLimit int) error {
-	// log := logger.WithField("function", "Wait")
 	// select the appropriate waiter
 	var waiter Waiter
 	switch url.Scheme {

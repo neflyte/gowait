@@ -2,9 +2,9 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/neflyte/gowait/internal/logger"
+	"github.com/neflyte/gowait/internal/types"
 	"gopkg.in/yaml.v2"
-	"gowait/internal/logger"
-	"gowait/internal/types"
 	"io/ioutil"
 	"net/url"
 	"os"

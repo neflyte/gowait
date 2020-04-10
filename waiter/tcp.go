@@ -3,8 +3,8 @@ package waiter
 import (
 	"errors"
 	"fmt"
-	"gowait/config"
-	"gowait/internal/logger"
+	"github.com/neflyte/gowait/config"
+	"github.com/neflyte/gowait/internal/logger"
 	"net"
 	"net/url"
 	"time"

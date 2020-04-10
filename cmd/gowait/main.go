@@ -2,12 +2,12 @@ package main
 
 import (
 	"flag"
+	"github.com/neflyte/gowait/config"
+	"github.com/neflyte/gowait/internal/logger"
+	"github.com/neflyte/gowait/internal/types"
+	"github.com/neflyte/gowait/internal/utils"
+	"github.com/neflyte/gowait/waiter"
 	"github.com/sirupsen/logrus"
-	"gowait/config"
-	"gowait/internal/logger"
-	"gowait/internal/types"
-	"gowait/internal/utils"
-	"gowait/waiter"
 	"net/url"
 )
 

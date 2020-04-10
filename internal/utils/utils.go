@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"gowait/internal/logger"
+	"github.com/neflyte/gowait/internal/logger"
 	"net/url"
 )
 

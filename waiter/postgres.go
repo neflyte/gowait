@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 	_ "github.com/lib/pq"
-	"gowait/config"
-	"gowait/internal/logger"
-	"gowait/internal/utils"
+	"github.com/neflyte/gowait/config"
+	"github.com/neflyte/gowait/internal/logger"
+	"github.com/neflyte/gowait/internal/utils"
 	"net/url"
 	"time"
 )

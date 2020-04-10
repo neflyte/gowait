@@ -1,4 +1,4 @@
-module gowait
+module github.com/neflyte/gowait
 
 go 1.12
 
