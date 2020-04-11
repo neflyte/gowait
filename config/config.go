@@ -55,6 +55,7 @@ var (
 	}
 )
 
+// AppConfig represents the struct of application configuration info
 type AppConfig struct {
 	ConfigSource   string        `yaml:"-" json:"-"`
 	ConfigFilename string        `yaml:"-" json:"-"`
@@ -65,6 +66,16 @@ type AppConfig struct {
 	SecretFilename string        `yaml:"secretFilename" json:"secretFilename"`
 	Secret         string        `yaml:"-" json:"-"`
 	LogFormat      string        `yaml:"logFormat" json:"logFormat"`
+}
+
+// AppConfigFile represents the configuration struct in a flat file
+type AppConfigFile struct {
+	Url            string `yaml:"url" json:"url"`
+	RetryDelay     string `yaml:"retryDelay" json:"retryDelay"`
+	RetryLimit     int    `yaml:"retryLimit" json:"retryLimit"`
+	SecretSource   string `yaml:"secretSource" json:"secretSource"`
+	SecretFilename string `yaml:"secretFilename" json:"secretFilename"`
+	LogFormat      string `yaml:"logFormat" json:"logFormat"`
 }
 
 func ReadEnvironmentVariables(cm types.ConfigMap) {
@@ -81,14 +92,16 @@ func ReadEnvironmentVariables(cm types.ConfigMap) {
 func (ac *AppConfig) LoadFromConfigMap(cm types.ConfigMap) error {
 	log := logger.WithField("function", "LoadFromConfigMap")
 	// url
+	ac.Url = url.URL{}
 	rawUrl := cm.GetString(KeyURL)
 	log.Debugf("rawUrl = %s", rawUrl)
-	urlPtr, err := url.Parse(rawUrl)
-	if err != nil {
-		log.Warnf("unable to parse url from config: %s", err)
-		ac.Url = url.URL{}
-	} else {
-		ac.Url = *urlPtr
+	if rawUrl != "" {
+		urlPtr, err := url.Parse(rawUrl)
+		if err != nil {
+			log.Warnf("unable to parse url from config: %s", err)
+		} else {
+			ac.Url = *urlPtr
+		}
 	}
 	// retryDelay
 	retryDuration, err := time.ParseDuration(cm.GetString(KeyRetryDelay))
@@ -119,6 +132,31 @@ func (ac *AppConfig) LoadFromConfigMap(cm types.ConfigMap) error {
 	return nil
 }
 
+func (ac *AppConfig) PopulateFromAppConfigFile(fileCfg *AppConfigFile) error {
+	log := logger.WithField("function", "PopulateFromAppConfigFile")
+	if fileCfg == nil {
+		log.Warnf("nil AppConfigFile; nothing to do")
+		return nil
+	}
+	// copy the data over to ac
+	waitUrl, err := url.Parse(fileCfg.Url)
+	if err != nil {
+		log.Errorf("error parsing URL: %s", err)
+		return err
+	}
+	ac.Url = *waitUrl
+	ac.RetryDelay, err = time.ParseDuration(fileCfg.RetryDelay)
+	if err != nil {
+		log.Errorf("error parsing RetryDelay: %s", err)
+		return err
+	}
+	ac.RetryLimit = fileCfg.RetryLimit
+	ac.SecretSource = fileCfg.SecretSource
+	ac.SecretFilename = fileCfg.SecretFilename
+	ac.LogFormat = fileCfg.LogFormat
+	return nil
+}
+
 func (ac *AppConfig) LoadFromYAML(fileName string) error {
 	log := logger.WithField("function", "LoadFromYAML")
 	log.Infof("reading YAML from file %s", fileName)
@@ -128,9 +166,16 @@ func (ac *AppConfig) LoadFromYAML(fileName string) error {
 		return err
 	}
 	log.Infof("umarshaling YAML")
-	err = yaml.Unmarshal(rawYaml, ac)
+	fileCfg := &AppConfigFile{}
+	err = yaml.Unmarshal(rawYaml, fileCfg)
 	if err != nil {
 		log.Errorf("unable to unmarshal YAML from file %s: %s", fileName, err)
+		return err
+	}
+	// copy the data over to ac
+	err = ac.PopulateFromAppConfigFile(fileCfg)
+	if err != nil {
+		log.Errorf("error populating config from configfile: %s", err)
 		return err
 	}
 	return nil
@@ -145,19 +190,27 @@ func (ac *AppConfig) LoadFromJSON(fileName string) error {
 		return err
 	}
 	log.Infof("umarshaling JSON")
-	err = json.Unmarshal(rawJson, ac)
+	fileCfg := &AppConfigFile{}
+	err = json.Unmarshal(rawJson, fileCfg)
 	if err != nil {
 		log.Errorf("unable to unmarshal JSON from file %s: %s", fileName, err)
 		return err
 	}
+	// copy the data over to ac
+	err = ac.PopulateFromAppConfigFile(fileCfg)
+	if err != nil {
+		log.Errorf("error populating config from configfile: %s", err)
+		return err
+	}
 	return nil
 }
+
 func (ac *AppConfig) LoadSecret() {
 	log := logger.WithField("function", "LoadSecret")
 	switch ac.SecretSource {
 	case SecretSourceEnv:
 		secretVal, ok := os.LookupEnv(EnvSecret)
-		if ok {
+		if ok && secretVal != "" {
 			log.Debugf("setting Secret from source %s", SecretSourceEnv)
 			ac.Secret = secretVal
 		}
@@ -166,8 +219,10 @@ func (ac *AppConfig) LoadSecret() {
 		if err != nil {
 			log.Errorf("error reading secret from file %s: %s", ac.SecretFilename, err)
 		} else {
-			log.Debugf("setting Secret from file %s", ac.SecretFilename)
-			ac.Secret = string(rawSecret)
+			if string(rawSecret) != "" {
+				log.Debugf("setting Secret from file %s", ac.SecretFilename)
+				ac.Secret = string(rawSecret)
+			}
 		}
 	}
 }

@@ -1,0 +1,8 @@
+{
+  "url": "postgres://postgres@localhost:5432/postgres?sslmode=disable",
+  "retryDelay": "3s",
+  "retryLimit": 3,
+  "secretSource": "file",
+  "secretFilename": "testdata/postgres/secret.txt",
+  "logFormat": "text"
+}

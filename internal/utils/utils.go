@@ -5,6 +5,7 @@ import (
 	"net/url"
 )
 
+// SanitizedURLString returns a parsed URL string with user credentials removed
 func SanitizedURLString(urlWithCreds url.URL) string {
 	log := logger.WithField("function", "SanitizedURLString")
 	clone, err := url.Parse(urlWithCreds.String())
@@ -12,6 +13,8 @@ func SanitizedURLString(urlWithCreds url.URL) string {
 		log.Errorf("unable to clone url: %s", err)
 		return urlWithCreds.String()
 	}
-	clone.User = url.User(clone.User.Username())
+	if clone.User != nil {
+		clone.User = url.User(clone.User.Username())
+	}
 	return clone.String()
 }

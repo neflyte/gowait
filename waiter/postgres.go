@@ -59,12 +59,12 @@ func (pg *postgresWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit
 			continue
 		}
 		// we're good
-		log.Infof("Successfully connected to '%s' after %d of %d attempts; elapsed time: %s", urlStr, pg.attempts, retryLimit, time.Now().Sub(startTime).String())
+		log.Infof("Successfully connected to '%s' after %d of %d attempts; elapsed time: %s", urlStr, pg.attempts, retryLimit, time.Since(startTime).String())
 		success = true
 		break
 	}
 	if !success {
-		errStr := fmt.Sprintf("Unable to connect to '%s' after %d attempts; elapsed time: %s", urlStr, pg.attempts, time.Now().Sub(startTime).String())
+		errStr := fmt.Sprintf("Unable to connect to '%s' after %d attempts; elapsed time: %s", urlStr, pg.attempts, time.Since(startTime).String())
 		log.Errorf(errStr)
 		return errors.New(errStr)
 	}

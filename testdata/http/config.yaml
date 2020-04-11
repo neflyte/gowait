@@ -1,0 +1,5 @@
+---
+url: "http://localhost:8080/"
+retryDelay: "3s"
+retryLimit: 3
+logFormat: "text"

@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	AppVersion = "0.1.2"
+	AppVersion = "0.1.3"
 )
 
 var (
@@ -84,9 +84,13 @@ func main() {
 	urlStr := utils.SanitizedURLString(cfg.Url)
 
 	// add secret to URL if it's non-empty
-	if cfg.Secret != "" && cfg.Url.User != nil {
+	if cfg.Url.User != nil {
 		log.Debug("adding secret to URL Userinfo")
-		cfg.Url.User = url.UserPassword(cfg.Url.User.Username(), cfg.Secret)
+		if cfg.Secret != "" {
+			cfg.Url.User = url.UserPassword(cfg.Url.User.Username(), cfg.Secret)
+		} else {
+			cfg.Url.User = url.User(cfg.Url.User.Username())
+		}
 	}
 
 	// go wait!

@@ -1,9 +1,14 @@
 package waiter
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"time"
+)
+
+var (
+	ErrConnection = errors.New("connection error")
 )
 
 type Waiter interface {
@@ -18,6 +23,8 @@ func Wait(url url.URL, retryDelay time.Duration, retryLimit int) error {
 		waiter = NewPostgresWaiter()
 	case "tcp":
 		waiter = NewTCPWaiter()
+	case "http":
+		waiter = NewHTTPWaiter()
 	default:
 		return fmt.Errorf("unknown scheme: %s", url.Scheme)
 	}
