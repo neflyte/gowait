@@ -25,6 +25,8 @@ func Wait(url url.URL, retryDelay time.Duration, retryLimit int) error {
 		waiter = NewTCPWaiter()
 	case "http":
 		waiter = NewHTTPWaiter()
+	case "kafka":
+		waiter = NewKafkaWaiter()
 	default:
 		return fmt.Errorf("unknown scheme: %s", url.Scheme)
 	}

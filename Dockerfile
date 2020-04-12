@@ -1,5 +1,5 @@
 FROM golang:1.12-buster AS builder
-RUN apt-get update --yes && apt-get install --yes upx-ucl
+RUN apt-get update --yes && apt-get upgrade --yes && apt-get install --yes upx-ucl
 COPY . /src/gowait
 WORKDIR /src/gowait
 RUN go mod download

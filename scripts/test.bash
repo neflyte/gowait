@@ -48,6 +48,13 @@ declare PROGARGS=""
       export GOWAIT_SECRET=""
       export GOWAIT_LOG_FORMAT="text"
       ;;
+    "kafka")
+      export GOWAIT_URL="kafka://localhost:9092/"
+      export GOWAIT_RETRY_DELAY="3s"
+      export GOWAIT_RETRY_LIMIT="3"
+      export GOWAIT_SECRET=""
+      export GOWAIT_LOG_FORMAT="text"
+      ;;
     *)
       echo "*  unknown test ${TESTOPT}; aborting"
       exit 1
