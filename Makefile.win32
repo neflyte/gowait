@@ -1,0 +1,18 @@
+# Makefile.win32
+#
+lint:
+	golangci-lint run
+
+build:
+	SET CGO_ENABLED=0
+	go build -i -installsuffix nocgo -pkgdir "$(HOME)\go\pkg" -ldflags "-s -w -extldflags '-static'" -o bin\gowait.exe .\cmd\gowait
+	upx -q bin\gowait.exe
+
+clean:
+	del bin\gowait.exe
+
+build-docker: lint
+	docker build --no-cache -t neflyte/gowait:latest .
+
+bootstrap:
+	scoop install upx

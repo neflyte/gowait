@@ -2,8 +2,8 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/neflyte/configmap"
 	"github.com/neflyte/gowait/internal/logger"
-	"github.com/neflyte/gowait/internal/types"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"net/url"
@@ -78,18 +78,18 @@ type AppConfigFile struct {
 	LogFormat      string `yaml:"logFormat" json:"logFormat"`
 }
 
-func ReadEnvironmentVariables(cm types.ConfigMap) {
+func ReadEnvironmentVariables(cm configmap.ConfigMap) {
 	log := logger.WithField("function", "ReadEnvironmentVariables")
 	for envVar, mapKey := range EnvironmentVarMap {
 		val, ok := os.LookupEnv(envVar)
 		if ok {
 			log.Debugf("setting ConfigMap key %s = %s", mapKey, val)
-			cm.SetValue(mapKey, val)
+			cm.Set(mapKey, val)
 		}
 	}
 }
 
-func (ac *AppConfig) LoadFromConfigMap(cm types.ConfigMap) error {
+func (ac *AppConfig) LoadFromConfigMap(cm configmap.ConfigMap) error {
 	log := logger.WithField("function", "LoadFromConfigMap")
 	// url
 	ac.Url = url.URL{}

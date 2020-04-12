@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
+	"github.com/neflyte/configmap"
 	"github.com/neflyte/gowait/config"
 	"github.com/neflyte/gowait/internal/logger"
-	"github.com/neflyte/gowait/internal/types"
 	"github.com/neflyte/gowait/internal/utils"
 	"github.com/neflyte/gowait/waiter"
 	"github.com/sirupsen/logrus"
@@ -16,7 +16,7 @@ const (
 )
 
 var (
-	cm  types.ConfigMap
+	cm  configmap.ConfigMap
 	cfg *config.AppConfig
 )
 
@@ -34,7 +34,7 @@ func main() {
 	log.Warnf("gowait v%s - service readiness waiter", AppVersion)
 
 	log.Info("Load configuration")
-	cm = types.NewConfigMap()
+	cm = configmap.New()
 	switch cfg.ConfigSource {
 	case config.ConfSourceEnv:
 		log.Info("read environment variables")
