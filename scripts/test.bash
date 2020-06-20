@@ -8,7 +8,7 @@ export GOWAIT_LOG_FORMAT="text"
 # default program args
 declare PROGARGS=""
 # if a different test was specified, set it up
-[ "${1}" != "" ] && {
+[ -n "${1}" ] && {
   TESTOPT="${1}"
   case $TESTOPT in
     "postgres")

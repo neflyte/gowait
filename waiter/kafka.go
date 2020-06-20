@@ -8,7 +8,6 @@ import (
 	"github.com/neflyte/gowait/internal/logger"
 	"github.com/sirupsen/logrus"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 )
@@ -82,14 +81,9 @@ func (kw *kafkaWaiter) connectOnce() error {
 		"function": "connectOnce",
 	})
 	saramaConfig := sarama.NewConfig()
-	clientID := "gowait"
-	hostname, err := os.Hostname()
-	if err == nil {
-		clientID = fmt.Sprintf("%s/gowait", hostname)
-	}
-	saramaConfig.ClientID = clientID
+	saramaConfig.ClientID = "gowait"
 	broker := sarama.NewBroker(kw.brokers[0])
-	err = broker.Open(saramaConfig)
+	err := broker.Open(saramaConfig)
 	if err != nil {
 		log.Errorf("error opening connection to broker %s: %s", kw.brokers[0], err)
 		return err
