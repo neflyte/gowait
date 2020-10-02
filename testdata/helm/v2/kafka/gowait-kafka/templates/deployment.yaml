@@ -22,7 +22,7 @@ spec:
         {{- toYaml . | nindent 8 }}
     {{- end }}
       initContainers:
-        - {{ include "gowait.initContainer" . }}
+      {{- include "gowait.initContainer" . | trim | nindent 8 }}
       containers:
         - name: "kafka-ksqldb"
           image: "{{ .Values.image.image }}:{{ .Values.image.tag }}"

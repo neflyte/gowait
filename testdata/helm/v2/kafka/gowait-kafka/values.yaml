@@ -17,7 +17,7 @@ gowait:
   image: "neflyte/gowait:latest"
   url: "kafka://kafka:9092"
   retryDelay: "5s"
-  retryLimit: 3
+  retryLimit: 10
 
 kafka:
   autoCreateTopicsEnable: true
