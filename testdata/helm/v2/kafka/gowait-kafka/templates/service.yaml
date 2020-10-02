@@ -8,9 +8,9 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: ksqldb
       protocol: TCP
-      name: http
+      name: ksqldb
   selector:
     app.kubernetes.io/name: {{ include "gowait-kafka.name" . }}
     app.kubernetes.io/instance: {{ .Release.Name }}

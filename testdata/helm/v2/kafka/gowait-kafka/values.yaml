@@ -5,17 +5,26 @@
 replicaCount: 1
 
 image:
-  repository: nginx
-  tag: stable
+  image: confluentinc/ksqldb-server
+  tag: 0.12.0
   pullPolicy: IfNotPresent
 
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 
+gowait:
+  image: "neflyte/gowait:latest"
+  url: "kafka://kafka:9092"
+  retryDelay: "5s"
+  retryLimit: 3
+
+kafka:
+  autoCreateTopicsEnable: true
+
 service:
   type: ClusterIP
-  port: 80
+  port: 8088
 
 ingress:
   enabled: false

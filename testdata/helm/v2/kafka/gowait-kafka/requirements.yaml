@@ -1,0 +1,4 @@
+dependencies:
+  - name: kafka
+    version: 11.8.6
+    repository: "https://charts.bitnami.com/bitnami"

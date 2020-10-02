@@ -2,3 +2,4 @@
 .vscode/
 bin/
 
+/testdata/helm/v2/kafka/gowait-kafka/charts/
