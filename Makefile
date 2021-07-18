@@ -2,15 +2,11 @@
 #
 .PHONY: lint build clean build-docker deploy-test-kafka-helm undeploy-test-kafka-helm
 build:
-	CGO_ENABLED=0 go build -i -installsuffix nocgo -pkgdir "$(shell go env GOPATH)/pkg" -ldflags "-s -w -extldflags '-static'" -o bin/gowait ./cmd/gowait
-ifeq ($(shell uname -a),Linux)
-	go get github.com/pwaller/goupx
-	goupx -q bin/gowait
-else
+	CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/gowait ./cmd/gowait
 	upx -q bin/gowait
-endif
 
 lint:
+	go vet ./...
 	golangci-lint run
 
 clean:

@@ -1,11 +1,12 @@
 # Makefile.win32
 #
 lint:
+    go vet ./...
 	golangci-lint run
 
 build:
 	SET CGO_ENABLED=0
-	go build -i -installsuffix nocgo -pkgdir "$(shell go env GOPATH)\pkg" -ldflags "-s -w -extldflags '-static'" -o bin\gowait.exe .\cmd\gowait
+	go build -ldflags "-s -w" -o bin\gowait.exe .\cmd\gowait
 	upx -q bin\gowait.exe
 
 clean:

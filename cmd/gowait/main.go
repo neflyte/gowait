@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	AppVersion = "0.1.3"
+	AppVersion = "v0.1.4"
 )
 
 var (
@@ -31,7 +31,7 @@ func init() {
 
 func main() {
 	log := logger.WithField("function", "main")
-	log.Warnf("gowait v%s - service readiness waiter", AppVersion)
+	log.Warnf("gowait %s - service readiness waiter", AppVersion)
 
 	log.Info("Load configuration")
 	cm = configmap.New()
