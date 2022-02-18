@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/url"
+	"time"
+
 	_ "github.com/lib/pq"
 	"github.com/neflyte/gowait/config"
 	"github.com/neflyte/gowait/internal/logger"
 	"github.com/neflyte/gowait/internal/utils"
-	"net/url"
-	"time"
 )
 
 const (

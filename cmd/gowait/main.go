@@ -2,13 +2,13 @@ package main
 
 import (
 	"flag"
+	"net/url"
+
 	"github.com/neflyte/configmap"
 	"github.com/neflyte/gowait/config"
 	"github.com/neflyte/gowait/internal/logger"
 	"github.com/neflyte/gowait/internal/utils"
 	"github.com/neflyte/gowait/waiter"
-	"github.com/sirupsen/logrus"
-	"net/url"
 )
 
 const (
@@ -65,15 +65,11 @@ func main() {
 	}
 
 	// reconfigure logging
-	switch cfg.LogFormat {
-	case config.LogFormatText:
-		logger.Logger.SetFormatter(&logrus.TextFormatter{
-			ForceColors:      true,
-			FullTimestamp:    true,
-			QuoteEmptyFields: true,
-		})
-	case config.LogFormatJSON:
-		logger.Logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.ConfigureFormat(cfg.LogFormat)
+
+	// do we have a URL to wait for?
+	if cfg.Url.String() == "" {
+		log.Fatal("no URL was specified; nothing to wait for")
 	}
 
 	// load secret

@@ -2,14 +2,15 @@ package config
 
 import (
 	"encoding/json"
-	"github.com/neflyte/configmap"
-	"github.com/neflyte/gowait/internal/logger"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/neflyte/configmap"
+	"github.com/neflyte/gowait/internal/logger"
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -39,9 +40,6 @@ const (
 
 	SecretSourceEnv  = "env"
 	SecretSourceFile = "file"
-
-	LogFormatText = "text"
-	LogFormatJSON = "json"
 )
 
 var (
@@ -57,14 +55,16 @@ var (
 
 // AppConfig represents the struct of application configuration info
 type AppConfig struct {
-	ConfigSource   string        `yaml:"-" json:"-"`
-	ConfigFilename string        `yaml:"-" json:"-"`
+	// internal fields
+	ConfigSource   string `yaml:"-" json:"-"`
+	ConfigFilename string `yaml:"-" json:"-"`
+	Secret         string `yaml:"-" json:"-"`
+	// data from the configuration file
 	Url            url.URL       `yaml:"url" json:"url"`
 	RetryDelay     time.Duration `yaml:"retryDelay" json:"retryDelay"`
 	RetryLimit     int           `yaml:"retryLimit" json:"retryLimit"`
 	SecretSource   string        `yaml:"secretSource" json:"secretSource"`
 	SecretFilename string        `yaml:"secretFilename" json:"secretFilename"`
-	Secret         string        `yaml:"-" json:"-"`
 	LogFormat      string        `yaml:"logFormat" json:"logFormat"`
 }
 
@@ -105,14 +105,14 @@ func (ac *AppConfig) LoadFromConfigMap(cm configmap.ConfigMap) error {
 	}
 	// retryDelay
 	retryDuration, err := time.ParseDuration(cm.GetString(KeyRetryDelay))
-	if err != nil {
+	if err != nil && cm.GetString(KeyRetryDelay) != "" {
 		log.Warnf("unable to parse retryDelay from config: %s; defaulting to %s", err, RetryDelayDefault.String())
 		retryDuration = RetryDelayDefault
 	}
 	ac.RetryDelay = retryDuration
 	// retryLimit
 	limit, err := strconv.Atoi(cm.GetString(KeyRetryLimit))
-	if err != nil {
+	if err != nil && cm.GetString(KeyRetryLimit) != "" {
 		log.Warnf("unable to parse retryLimit from config: %s; defaulting to %d", err, RetryLimitDefault)
 		limit = RetryLimitDefault
 	}

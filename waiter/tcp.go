@@ -3,11 +3,12 @@ package waiter
 import (
 	"errors"
 	"fmt"
-	"github.com/neflyte/gowait/config"
-	"github.com/neflyte/gowait/internal/logger"
 	"net"
 	"net/url"
 	"time"
+
+	"github.com/neflyte/gowait/config"
+	"github.com/neflyte/gowait/internal/logger"
 )
 
 type tcpWaiter struct {

@@ -3,13 +3,14 @@ package waiter
 import (
 	"errors"
 	"fmt"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/Shopify/sarama"
 	"github.com/neflyte/gowait/config"
 	"github.com/neflyte/gowait/internal/logger"
 	"github.com/sirupsen/logrus"
-	"net/url"
-	"strings"
-	"time"
 )
 
 // url: kafka://broker1:port/?brokers=broker2:port,broker3:port...

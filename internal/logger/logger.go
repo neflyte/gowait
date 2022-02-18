@@ -1,51 +1,64 @@
 package logger
 
 import (
-	"github.com/sirupsen/logrus"
 	"os"
+
+	"github.com/sirupsen/logrus"
 )
 
+const LogFormatText = "text"
+const LogFormatJSON = "json"
+
 var (
-	Logger *logrus.Logger
+	rootLogger *logrus.Logger
 )
 
 func init() {
-	Logger = logrus.New()
-	Logger.SetLevel(logrus.DebugLevel)
-	Logger.SetFormatter(&logrus.TextFormatter{
+	rootLogger = logrus.New()
+	rootLogger.SetLevel(logrus.DebugLevel)
+	rootLogger.SetFormatter(&logrus.TextFormatter{
 		ForceColors:      true,
 		FullTimestamp:    true,
 		QuoteEmptyFields: true,
 	})
-	Logger.SetOutput(os.Stdout)
+	rootLogger.SetOutput(os.Stdout)
+}
+
+func ConfigureFormat(format string) {
+	switch format {
+	case LogFormatText:
+		rootLogger.SetFormatter(&logrus.TextFormatter{
+			ForceColors:      true,
+			FullTimestamp:    true,
+			QuoteEmptyFields: true,
+		})
+	case LogFormatJSON:
+		rootLogger.SetFormatter(&logrus.JSONFormatter{})
+	}
 }
 
 func WithField(fieldName, fieldValue string) logrus.FieldLogger {
-	return Logger.WithField(fieldName, fieldValue)
+	return rootLogger.WithField(fieldName, fieldValue)
 }
 
 func WithFields(fields map[string]interface{}) logrus.FieldLogger {
-	lf := logrus.Fields{}
-	for key, intf := range fields {
-		lf[key] = intf
-	}
-	return Logger.WithFields(lf)
+	return rootLogger.WithFields(fields)
 }
 
-func AddField(logger logrus.FieldLogger, fieldName, fieldValue string) logrus.FieldLogger {
-	if logger == nil {
+func AddField(log logrus.FieldLogger, fieldName, fieldValue string) logrus.FieldLogger {
+	if log == nil {
 		return WithField(fieldName, fieldValue)
 	}
-	return logger.WithField(fieldName, fieldValue)
+	return log.WithField(fieldName, fieldValue)
 }
 
-func AddFields(logger logrus.FieldLogger, fields map[string]interface{}) logrus.FieldLogger {
-	if logger == nil {
+func AddFields(log logrus.FieldLogger, fields map[string]interface{}) logrus.FieldLogger {
+	if log == nil {
 		return WithFields(fields)
 	}
 	lf := logrus.Fields{}
 	for key, intf := range fields {
 		lf[key] = intf
 	}
-	return logger.WithFields(lf)
+	return log.WithFields(lf)
 }

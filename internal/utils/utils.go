@@ -1,8 +1,9 @@
 package utils
 
 import (
-	"github.com/neflyte/gowait/internal/logger"
 	"net/url"
+
+	"github.com/neflyte/gowait/internal/logger"
 )
 
 // SanitizedURLString returns a parsed URL string with user credentials removed
