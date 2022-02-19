@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor log format constants into the logger package
 - Refactor logger configuration into the logger package
 - Exit immediately if no URL was specified to wait for
+- Switch to a delegate-based logger with convenience methods to encourage structured logging
 
 ### Removed
 - Remove `goupx` in favour of `upx`

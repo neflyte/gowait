@@ -9,7 +9,6 @@ import (
 
 	"github.com/neflyte/gowait/config"
 	"github.com/neflyte/gowait/internal/logger"
-	"github.com/sirupsen/logrus"
 )
 
 type httpWaiter struct {
@@ -27,10 +26,7 @@ func NewHTTPWaiter() Waiter {
 }
 
 func (hw *httpWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit int) error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "HTTPWaiter",
-		"function": "Wait",
-	})
+	log := logger.Function("Wait").Field("waiter", "HTTPWaiter")
 	success := false
 	startTime := time.Now()
 	log.Infof("Using retry delay of %s", retryDelay.String())
@@ -64,10 +60,7 @@ func (hw *httpWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit int
 }
 
 func (hw *httpWaiter) connectOnce(httpUrl url.URL) error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "HTTPWaiter",
-		"function": "connectOnce",
-	})
+	log := logger.Function("connectOnce").Field("waiter", "HTTPWaiter")
 	req, err := http.NewRequest(http.MethodGet, httpUrl.String(), nil)
 	if err != nil {
 		log.Errorf("error creating new request: %s", err)
@@ -79,12 +72,12 @@ func (hw *httpWaiter) connectOnce(httpUrl url.URL) error {
 		log.Errorf("error executing request: %s", err)
 		return err
 	}
-	defer func(logger logrus.FieldLogger, resp *http.Response) {
-		err := resp.Body.Close()
+	defer func() {
+		err = res.Body.Close()
 		if err != nil {
 			log.Errorf("error closing response body: %s", err)
 		}
-	}(log, res)
+	}()
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		log.Errorf("request error; code: %d, status: %s", res.StatusCode, res.Status)
 		return ErrConnection
@@ -94,10 +87,7 @@ func (hw *httpWaiter) connectOnce(httpUrl url.URL) error {
 }
 
 func (hw *httpWaiter) delayOnce() {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "HTTPWaiter",
-		"function": "delayOnce",
-	})
+	log := logger.Function("delayOnce").Field("waiter", "HTTPWaiter")
 	log.Info("delaying until next attempt")
 	<-hw.ticker.C
 }

@@ -1,13 +1,19 @@
 package logger
 
 import (
-	"os"
-
 	"github.com/sirupsen/logrus"
 )
 
-const LogFormatText = "text"
-const LogFormatJSON = "json"
+const (
+	LogFormatText = "text"
+	LogFormatJSON = "json"
+
+	LogLevelDebug = "debug"
+	LogLevelInfo  = "info"
+	LogLevelWarn  = "warn"
+	LogLevelError = "error"
+	LogLevelFatal = "fatal"
+)
 
 var (
 	rootLogger *logrus.Logger
@@ -17,11 +23,9 @@ func init() {
 	rootLogger = logrus.New()
 	rootLogger.SetLevel(logrus.DebugLevel)
 	rootLogger.SetFormatter(&logrus.TextFormatter{
-		ForceColors:      true,
 		FullTimestamp:    true,
 		QuoteEmptyFields: true,
 	})
-	rootLogger.SetOutput(os.Stdout)
 }
 
 func ConfigureFormat(format string) {
@@ -37,28 +41,27 @@ func ConfigureFormat(format string) {
 	}
 }
 
-func WithField(fieldName, fieldValue string) logrus.FieldLogger {
-	return rootLogger.WithField(fieldName, fieldValue)
+func ConfigureLevel(level string) {
+	loggerLevel := logrus.InfoLevel
+	switch level {
+	case LogLevelDebug:
+		loggerLevel = logrus.DebugLevel
+	case LogLevelInfo:
+		loggerLevel = logrus.InfoLevel
+	case LogLevelWarn:
+		loggerLevel = logrus.WarnLevel
+	case LogLevelError:
+		loggerLevel = logrus.ErrorLevel
+	case LogLevelFatal:
+		loggerLevel = logrus.FatalLevel
+	}
+	rootLogger.SetLevel(loggerLevel)
 }
 
-func WithFields(fields map[string]interface{}) logrus.FieldLogger {
-	return rootLogger.WithFields(fields)
+func GetRootLogger() logrus.FieldLogger {
+	return rootLogger
 }
 
-func AddField(log logrus.FieldLogger, fieldName, fieldValue string) logrus.FieldLogger {
-	if log == nil {
-		return WithField(fieldName, fieldValue)
-	}
-	return log.WithField(fieldName, fieldValue)
-}
-
-func AddFields(log logrus.FieldLogger, fields map[string]interface{}) logrus.FieldLogger {
-	if log == nil {
-		return WithFields(fields)
-	}
-	lf := logrus.Fields{}
-	for key, intf := range fields {
-		lf[key] = intf
-	}
-	return log.WithFields(lf)
+func Function(funcName string) LogDelegate {
+	return NewLogDelegate(rootLogger.WithField(FuncField, funcName))
 }

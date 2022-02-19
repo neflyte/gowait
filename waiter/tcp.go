@@ -26,10 +26,7 @@ func NewTCPWaiter() Waiter {
 }
 
 func (tw *tcpWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit int) error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "TCPWaiter",
-		"function": "Wait",
-	})
+	log := logger.Function("Wait").Field("waiter", "TCPWaiter")
 	success := false
 	startTime := time.Now()
 	log.Infof("Using retry delay of %s", retryDelay.String())
@@ -63,10 +60,7 @@ func (tw *tcpWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit int)
 }
 
 func (tw *tcpWaiter) connectOnce(host string) error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "TCPWaiter",
-		"function": "connectOnce",
-	})
+	log := logger.Function("connectOnce").Field("waiter", "TCPWaiter")
 	conn, err := net.Dial("tcp", host)
 	if err != nil {
 		log.Errorf("unable to connect to tcp address %s: %s", host, err)
@@ -82,10 +76,7 @@ func (tw *tcpWaiter) connectOnce(host string) error {
 }
 
 func (tw *tcpWaiter) delayOnce() {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "TCPWaiter",
-		"function": "delayOnce",
-	})
+	log := logger.Function("delayOnce").Field("waiter", "TCPWaiter")
 	log.Info("delaying until next attempt")
 	<-tw.ticker.C
 }

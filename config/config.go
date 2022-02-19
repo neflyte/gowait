@@ -18,6 +18,8 @@ const (
 	RetryDelayDefault   = 10 * time.Second
 	ConfSourceDefault   = ConfSourceEnv
 	SecretSourceDefault = SecretSourceEnv
+	LogFormatDefault    = logger.LogFormatText
+	LogLevelDefault     = logger.LogLevelInfo
 
 	ConfSourceEnv  = "env"
 	ConfSourceYAML = "yaml"
@@ -29,6 +31,7 @@ const (
 	KeySecretSource   = "secretSource"
 	KeySecretFilename = "secretFilename"
 	KeyLogFormat      = "logFormat"
+	KeyLogLevel       = "logLevel"
 
 	EnvRetryDelay     = "GOWAIT_RETRY_DELAY"
 	EnvRetryLimit     = "GOWAIT_RETRY_LIMIT"
@@ -37,6 +40,7 @@ const (
 	EnvSecretFilename = "GOWAIT_SECRET_FILENAME"
 	EnvSecret         = "GOWAIT_SECRET"
 	EnvLogFormat      = "GOWAIT_LOG_FORMAT"
+	EnvLogLevel       = "GOWAIT_LOG_LEVEL"
 
 	SecretSourceEnv  = "env"
 	SecretSourceFile = "file"
@@ -50,6 +54,7 @@ var (
 		EnvSecretSource:   KeySecretSource,
 		EnvSecretFilename: KeySecretFilename,
 		EnvLogFormat:      KeyLogFormat,
+		EnvLogLevel:       KeyLogLevel,
 	}
 )
 
@@ -66,6 +71,7 @@ type AppConfig struct {
 	SecretSource   string        `yaml:"secretSource" json:"secretSource"`
 	SecretFilename string        `yaml:"secretFilename" json:"secretFilename"`
 	LogFormat      string        `yaml:"logFormat" json:"logFormat"`
+	LogLevel       string        `yaml:"logLevel" json:"logLevel"`
 }
 
 // AppConfigFile represents the configuration struct in a flat file
@@ -76,10 +82,11 @@ type AppConfigFile struct {
 	SecretSource   string `yaml:"secretSource" json:"secretSource"`
 	SecretFilename string `yaml:"secretFilename" json:"secretFilename"`
 	LogFormat      string `yaml:"logFormat" json:"logFormat"`
+	LogLevel       string `yaml:"logLevel" json:"logLevel"`
 }
 
 func ReadEnvironmentVariables(cm configmap.ConfigMap) {
-	log := logger.WithField("function", "ReadEnvironmentVariables")
+	log := logger.Function("ReadEnvironmentVariables")
 	for envVar, mapKey := range EnvironmentVarMap {
 		val, ok := os.LookupEnv(envVar)
 		if ok {
@@ -90,7 +97,7 @@ func ReadEnvironmentVariables(cm configmap.ConfigMap) {
 }
 
 func (ac *AppConfig) LoadFromConfigMap(cm configmap.ConfigMap) error {
-	log := logger.WithField("function", "LoadFromConfigMap")
+	log := logger.Function("LoadFromConfigMap")
 	// url
 	ac.Url = url.URL{}
 	rawUrl := cm.GetString(KeyURL)
@@ -127,13 +134,21 @@ func (ac *AppConfig) LoadFromConfigMap(cm configmap.ConfigMap) error {
 	// secretFilename
 	ac.SecretFilename = cm.GetString(KeySecretFilename)
 	// logFormat
-	ac.LogFormat = cm.GetString(KeyLogFormat)
+	ac.LogFormat = LogFormatDefault
+	if cm.GetString(KeyLogFormat) != "" {
+		ac.LogFormat = cm.GetString(KeyLogFormat)
+	}
+	// logLevel
+	ac.LogLevel = LogLevelDefault
+	if cm.GetString(KeyLogLevel) != "" {
+		ac.LogLevel = cm.GetString(KeyLogLevel)
+	}
 	// done.
 	return nil
 }
 
 func (ac *AppConfig) PopulateFromAppConfigFile(fileCfg *AppConfigFile) error {
-	log := logger.WithField("function", "PopulateFromAppConfigFile")
+	log := logger.Function("PopulateFromAppConfigFile")
 	if fileCfg == nil {
 		log.Warnf("nil AppConfigFile; nothing to do")
 		return nil
@@ -154,11 +169,12 @@ func (ac *AppConfig) PopulateFromAppConfigFile(fileCfg *AppConfigFile) error {
 	ac.SecretSource = fileCfg.SecretSource
 	ac.SecretFilename = fileCfg.SecretFilename
 	ac.LogFormat = fileCfg.LogFormat
+	ac.LogLevel = fileCfg.LogLevel
 	return nil
 }
 
 func (ac *AppConfig) LoadFromYAML(fileName string) error {
-	log := logger.WithField("function", "LoadFromYAML")
+	log := logger.Function("LoadFromYAML")
 	log.Infof("reading YAML from file %s", fileName)
 	rawYaml, err := ioutil.ReadFile(fileName)
 	if err != nil {
@@ -182,7 +198,7 @@ func (ac *AppConfig) LoadFromYAML(fileName string) error {
 }
 
 func (ac *AppConfig) LoadFromJSON(fileName string) error {
-	log := logger.WithField("function", "LoadFromJSON")
+	log := logger.Function("LoadFromJSON")
 	log.Infof("reading JSON from file %s", fileName)
 	rawJson, err := ioutil.ReadFile(fileName)
 	if err != nil {
@@ -206,7 +222,7 @@ func (ac *AppConfig) LoadFromJSON(fileName string) error {
 }
 
 func (ac *AppConfig) LoadSecret() {
-	log := logger.WithField("function", "LoadSecret")
+	log := logger.Function("LoadSecret")
 	switch ac.SecretSource {
 	case SecretSourceEnv:
 		secretVal, ok := os.LookupEnv(EnvSecret)

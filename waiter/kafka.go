@@ -30,10 +30,7 @@ func NewKafkaWaiter() Waiter {
 }
 
 func (kw *kafkaWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit int) error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "KafkaWaiter",
-		"function": "Wait",
-	})
+	log := logger.Function("Wait").Field("waiter", "KafkaWaiter")
 	// start with the url hostname
 	kw.brokers = append(kw.brokers, url.Host)
 	// add any extra brokers
@@ -77,10 +74,7 @@ func (kw *kafkaWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit in
 }
 
 func (kw *kafkaWaiter) connectOnce() error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "KafkaWaiter",
-		"function": "connectOnce",
-	})
+	log := logger.Function("connectOnce").Field("waiter", "KafkaWaiter")
 	saramaConfig := sarama.NewConfig()
 	saramaConfig.ClientID = "gowait"
 	broker := sarama.NewBroker(kw.brokers[0])
@@ -112,10 +106,7 @@ func (kw *kafkaWaiter) connectOnce() error {
 }
 
 func (kw *kafkaWaiter) delayOnce() {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "KafkaWaiter",
-		"function": "delayOnce",
-	})
+	log := logger.Function("delayOnce").Field("waiter", "KafkaWaiter")
 	log.Info("delaying until next attempt")
 	<-kw.ticker.C
 }

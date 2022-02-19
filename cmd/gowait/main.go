@@ -30,8 +30,9 @@ func init() {
 }
 
 func main() {
-	log := logger.WithField("function", "main")
-	log.Warnf("gowait %s - service readiness waiter", AppVersion)
+	log := logger.Function("main")
+	log.Field("version", AppVersion).
+		Warn("gowait - service readiness waiter")
 
 	log.Info("Load configuration")
 	cm = configmap.New()
@@ -42,16 +43,20 @@ func main() {
 		log.Info("initialize configuration")
 		err := cfg.LoadFromConfigMap(cm)
 		if err != nil {
-			log.Fatalf("unable to load configuration: %s; aborting...", err)
+			log.Err(err).
+				Fatalf("unable to load configuration; aborting")
 		}
 	case config.ConfSourceJSON:
 		if cfg.ConfigFilename == "" {
 			log.Fatal("config source set to JSON but no config file specified; aborting...")
 		}
-		log.Infof("initialize configuration from JSON file %s", cfg.ConfigFilename)
+		log.Field("configFilename", cfg.ConfigFilename).
+			Infof("initialize configuration from JSON file")
 		err := cfg.LoadFromJSON(cfg.ConfigFilename)
 		if err != nil {
-			log.Fatalf("unable to load configuration from JSON file %s: %s; aborting...", cfg.ConfigFilename, err)
+			log.Field("configFilename", cfg.ConfigFilename).
+				Err(err).
+				Fatal("unable to load configuration from JSON file; aborting")
 		}
 	case config.ConfSourceYAML:
 		if cfg.ConfigFilename == "" {
@@ -60,12 +65,15 @@ func main() {
 		log.Infof("initialize configuration from YAML file %s", cfg.ConfigFilename)
 		err := cfg.LoadFromYAML(cfg.ConfigFilename)
 		if err != nil {
-			log.Fatalf("unable to load configuration from YAML file %s: %s; aborting...", cfg.ConfigFilename, err)
+			log.Field("configFilename", cfg.ConfigFilename).
+				Err(err).
+				Fatal("unable to load configuration from YAML file; aborting")
 		}
 	}
 
 	// reconfigure logging
 	logger.ConfigureFormat(cfg.LogFormat)
+	logger.ConfigureLevel(cfg.LogLevel)
 
 	// do we have a URL to wait for?
 	if cfg.Url.String() == "" {
@@ -90,10 +98,18 @@ func main() {
 	}
 
 	// go wait!
-	log.Infof("Starting to wait for '%s', making at most %d attempts with a %s delay between each", urlStr, cfg.RetryLimit, cfg.RetryDelay.String())
+	log.Fields(map[string]interface{}{
+		"url":        urlStr,
+		"maxRetries": cfg.RetryLimit,
+		"retryDelay": cfg.RetryDelay.String(),
+	}).
+		Infof("Starting to wait")
 	err := waiter.Wait(cfg.Url, cfg.RetryDelay, cfg.RetryLimit)
 	if err != nil {
-		log.Fatalf("Error waiting for %s: %s; aborting...", urlStr, err)
+		log.Field("url", urlStr).
+			Err(err).
+			Fatal("Error waiting; aborting")
 	}
-	log.Infof("Successfully waited for %s; done.", urlStr)
+	log.Field("url", urlStr).
+		Info("Successfully waited; done.")
 }

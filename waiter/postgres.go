@@ -34,10 +34,7 @@ func NewPostgresWaiter() Waiter {
 }
 
 func (pg *postgresWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit int) error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "PostgresWaiter",
-		"function": "Wait",
-	})
+	log := logger.Function("Wait").Field("waiter", "PostgresWaiter")
 	success := false
 	startTime := time.Now()
 	log.Infof("Using retry delay of %s", retryDelay.String())
@@ -73,10 +70,7 @@ func (pg *postgresWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit
 }
 
 func (pg *postgresWaiter) connectOnce() error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "PostgresWaiter",
-		"function": "connectOnce",
-	})
+	log := logger.Function("connectOnce").Field("waiter", "PostgresWaiter")
 	db, err := sql.Open(SQLDriverName, pg.urlString)
 	if err != nil {
 		log.Errorf("error opening database connection: %s", err)
@@ -99,10 +93,7 @@ func (pg *postgresWaiter) connectOnce() error {
 }
 
 func (pg *postgresWaiter) delayOnce() {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "PostgresWaiter",
-		"function": "delayOnce",
-	})
+	log := logger.Function("delayOnce").Field("waiter", "PostgresWaiter")
 	log.Infof("delaying %s until next attempt", pg.retryDelay.String())
 	<-pg.ticker.C
 }
