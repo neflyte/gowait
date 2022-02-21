@@ -2,50 +2,66 @@ package logger
 
 import (
 	"github.com/sirupsen/logrus"
-	"os"
+)
+
+const (
+	LogFormatText = "text"
+	LogFormatJSON = "json"
+
+	LogLevelDebug = "debug"
+	LogLevelInfo  = "info"
+	LogLevelWarn  = "warn"
+	LogLevelError = "error"
+	LogLevelFatal = "fatal"
 )
 
 var (
-	Logger *logrus.Logger
+	rootLogger *logrus.Logger
 )
 
 func init() {
-	Logger = logrus.New()
-	Logger.SetLevel(logrus.DebugLevel)
-	Logger.SetFormatter(&logrus.TextFormatter{
-		ForceColors:      true,
+	rootLogger = logrus.New()
+	rootLogger.SetLevel(logrus.DebugLevel)
+	rootLogger.SetFormatter(&logrus.TextFormatter{
 		FullTimestamp:    true,
 		QuoteEmptyFields: true,
 	})
-	Logger.SetOutput(os.Stdout)
 }
 
-func WithField(fieldName, fieldValue string) logrus.FieldLogger {
-	return Logger.WithField(fieldName, fieldValue)
+func ConfigureFormat(format string) {
+	switch format {
+	case LogFormatText:
+		rootLogger.SetFormatter(&logrus.TextFormatter{
+			ForceColors:      true,
+			FullTimestamp:    true,
+			QuoteEmptyFields: true,
+		})
+	case LogFormatJSON:
+		rootLogger.SetFormatter(&logrus.JSONFormatter{})
+	}
 }
 
-func WithFields(fields map[string]interface{}) logrus.FieldLogger {
-	lf := logrus.Fields{}
-	for key, intf := range fields {
-		lf[key] = intf
+func ConfigureLevel(level string) {
+	loggerLevel := logrus.InfoLevel
+	switch level {
+	case LogLevelDebug:
+		loggerLevel = logrus.DebugLevel
+	case LogLevelInfo:
+		loggerLevel = logrus.InfoLevel
+	case LogLevelWarn:
+		loggerLevel = logrus.WarnLevel
+	case LogLevelError:
+		loggerLevel = logrus.ErrorLevel
+	case LogLevelFatal:
+		loggerLevel = logrus.FatalLevel
 	}
-	return Logger.WithFields(lf)
+	rootLogger.SetLevel(loggerLevel)
 }
 
-func AddField(logger logrus.FieldLogger, fieldName, fieldValue string) logrus.FieldLogger {
-	if logger == nil {
-		return WithField(fieldName, fieldValue)
-	}
-	return logger.WithField(fieldName, fieldValue)
+func GetRootLogger() logrus.FieldLogger {
+	return rootLogger
 }
 
-func AddFields(logger logrus.FieldLogger, fields map[string]interface{}) logrus.FieldLogger {
-	if logger == nil {
-		return WithFields(fields)
-	}
-	lf := logrus.Fields{}
-	for key, intf := range fields {
-		lf[key] = intf
-	}
-	return logger.WithFields(lf)
+func Function(funcName string) LogDelegate {
+	return NewLogDelegate(rootLogger.WithField(FuncField, funcName))
 }

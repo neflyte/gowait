@@ -3,13 +3,13 @@ package waiter
 import (
 	"errors"
 	"fmt"
-	"github.com/Shopify/sarama"
-	"github.com/neflyte/gowait/config"
-	"github.com/neflyte/gowait/internal/logger"
-	"github.com/sirupsen/logrus"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/Shopify/sarama"
+	"github.com/neflyte/gowait/config"
+	"github.com/neflyte/gowait/internal/logger"
 )
 
 // url: kafka://broker1:port/?brokers=broker2:port,broker3:port...
@@ -29,10 +29,8 @@ func NewKafkaWaiter() Waiter {
 }
 
 func (kw *kafkaWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit int) error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "KafkaWaiter",
-		"function": "Wait",
-	})
+	log := logger.Function("Wait").
+		Field("waiter", "KafkaWaiter")
 	// start with the url hostname
 	kw.brokers = append(kw.brokers, url.Host)
 	// add any extra brokers
@@ -45,76 +43,93 @@ func (kw *kafkaWaiter) Wait(url url.URL, retryDelay time.Duration, retryLimit in
 	}
 	success := false
 	startTime := time.Now()
-	log.Infof("Using retry delay of %s", retryDelay.String())
+	log.Field("retryDelay", retryDelay.String()).
+		Info("Using retry delay")
 	kw.ticker = time.NewTicker(retryDelay)
 	kw.attempts = 0
 	for kw.attempts < retryLimit {
-		log.Infof("[%d/%d] Connecting to %#v", kw.attempts+1, retryLimit, kw.brokers)
+		log.Field("brokers", fmt.Sprintf("%#v", kw.brokers)).
+			Infof("[%d/%d] Connecting", kw.attempts+1, retryLimit)
 		err := kw.connectOnce()
 		kw.attempts++ // no matter what happens, we made an attempt
 		if err != nil {
 			if kw.attempts >= retryLimit {
-				log.Errorf("Connect error: %s; retry limit reached; giving up...", err)
+				log.Err(err).
+					Error("Connect error: retry limit reached; giving up")
 				break
 			}
-			log.Errorf("Connect error: %s; delaying until next retry", err)
+			log.Err(err).
+				Error("Connect error; delaying until next retry")
 			kw.delayOnce()
 			continue
 		}
 		// we're good
-		log.Infof("Successfully connected to %#v after %d of %d attempts; elapsed time: %s", kw.brokers, kw.attempts, retryLimit, time.Since(startTime).String())
+		log.Fields(map[string]interface{}{
+			"brokers":     fmt.Sprintf("%#v", kw.brokers),
+			"attempts":    kw.attempts,
+			"retryLimit":  retryLimit,
+			"elapsedTime": time.Since(startTime).String(),
+		}).
+			Info("Successfully connected")
 		success = true
 		break
 	}
 	if !success {
 		errStr := fmt.Sprintf("Unable to connect to %#v after %d attempts; elapsed time: %s", kw.brokers, kw.attempts, time.Since(startTime).String())
-		log.Errorf(errStr)
+		log.Fields(map[string]interface{}{
+			"brokers":     fmt.Sprintf("%#v", kw.brokers),
+			"attempts":    kw.attempts,
+			"retryLimit":  retryLimit,
+			"elapsedTime": time.Since(startTime).String(),
+		}).
+			Errorf("Unable to connect")
 		return errors.New(errStr)
 	}
 	return nil
-
 }
 
 func (kw *kafkaWaiter) connectOnce() error {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "KafkaWaiter",
-		"function": "connectOnce",
-	})
+	log := logger.Function("connectOnce").
+		Field("waiter", "KafkaWaiter")
 	saramaConfig := sarama.NewConfig()
 	saramaConfig.ClientID = "gowait"
 	broker := sarama.NewBroker(kw.brokers[0])
 	err := broker.Open(saramaConfig)
 	if err != nil {
-		log.Errorf("error opening connection to broker %s: %s", kw.brokers[0], err)
+		log.Err(err).
+			Field("broker", kw.brokers[0]).
+			Error("error opening connection to broker")
 		return err
 	}
-	defer func(logger logrus.FieldLogger, brkr *sarama.Broker) {
-		if brkr == nil {
+	defer func() {
+		if broker == nil {
 			return
 		}
-		err := brkr.Close()
+		err = broker.Close()
 		if err != nil {
-			logger.Errorf("error closing broker connection: %s", err)
+			log.Err(err).
+				Field("broker", kw.brokers[0]).
+				Error("error closing broker connection")
 		}
-	}(log, broker)
+	}()
 	connected, err := broker.Connected()
 	if err != nil {
-		log.Errorf("broker connection error: %s", err)
+		log.Err(err).
+			Error("broker connection error")
 		return err
 	}
 	if !connected {
-		log.Errorf("broker is not connected")
+		log.Error("broker is not connected")
 		return ErrConnection
 	}
-	log.Infof("successfully connected to broker %s", kw.brokers[0])
+	log.Field("broker", kw.brokers[0]).
+		Info("successfully connected to broker")
 	return nil
 }
 
 func (kw *kafkaWaiter) delayOnce() {
-	log := logger.WithFields(map[string]interface{}{
-		"waiter":   "KafkaWaiter",
-		"function": "delayOnce",
-	})
+	log := logger.Function("delayOnce").
+		Field("waiter", "KafkaWaiter")
 	log.Info("delaying until next attempt")
 	<-kw.ticker.C
 }

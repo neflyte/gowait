@@ -2,17 +2,17 @@ package main
 
 import (
 	"flag"
+	"net/url"
+
 	"github.com/neflyte/configmap"
 	"github.com/neflyte/gowait/config"
 	"github.com/neflyte/gowait/internal/logger"
 	"github.com/neflyte/gowait/internal/utils"
 	"github.com/neflyte/gowait/waiter"
-	"github.com/sirupsen/logrus"
-	"net/url"
 )
 
 const (
-	AppVersion = "0.1.3"
+	AppVersion = "v0.1.4"
 )
 
 var (
@@ -30,10 +30,12 @@ func init() {
 }
 
 func main() {
-	log := logger.WithField("function", "main")
-	log.Warnf("gowait v%s - service readiness waiter", AppVersion)
+	log := logger.Function("main")
+	log.Field("version", AppVersion).
+		Warn("gowait - service readiness waiter")
 
-	log.Info("Load configuration")
+	log.Field("source", cfg.ConfigSource).
+		Info("Load configuration")
 	cm = configmap.New()
 	switch cfg.ConfigSource {
 	case config.ConfSourceEnv:
@@ -42,42 +44,49 @@ func main() {
 		log.Info("initialize configuration")
 		err := cfg.LoadFromConfigMap(cm)
 		if err != nil {
-			log.Fatalf("unable to load configuration: %s; aborting...", err)
+			log.Err(err).
+				Fatal("unable to load configuration; aborting")
 		}
 	case config.ConfSourceJSON:
 		if cfg.ConfigFilename == "" {
-			log.Fatal("config source set to JSON but no config file specified; aborting...")
+			log.Fatal("config source set to JSON but no config file specified; aborting")
 		}
-		log.Infof("initialize configuration from JSON file %s", cfg.ConfigFilename)
+		log.Field("file", cfg.ConfigFilename).
+			Info("initialize configuration from JSON file")
 		err := cfg.LoadFromJSON(cfg.ConfigFilename)
 		if err != nil {
-			log.Fatalf("unable to load configuration from JSON file %s: %s; aborting...", cfg.ConfigFilename, err)
+			log.Field("file", cfg.ConfigFilename).
+				Err(err).
+				Fatal("unable to load configuration from JSON file; aborting")
 		}
 	case config.ConfSourceYAML:
 		if cfg.ConfigFilename == "" {
-			log.Fatal("config source set to YAML but no config file specified; aborting...")
+			log.Fatal("config source set to YAML but no config file specified; aborting")
 		}
-		log.Infof("initialize configuration from YAML file %s", cfg.ConfigFilename)
+		log.Field("file", cfg.ConfigFilename).
+			Info("initialize configuration from YAML file")
 		err := cfg.LoadFromYAML(cfg.ConfigFilename)
 		if err != nil {
-			log.Fatalf("unable to load configuration from YAML file %s: %s; aborting...", cfg.ConfigFilename, err)
+			log.Field("file", cfg.ConfigFilename).
+				Err(err).
+				Fatal("unable to load configuration from YAML file; aborting")
 		}
 	}
 
 	// reconfigure logging
-	switch cfg.LogFormat {
-	case config.LogFormatText:
-		logger.Logger.SetFormatter(&logrus.TextFormatter{
-			ForceColors:      true,
-			FullTimestamp:    true,
-			QuoteEmptyFields: true,
-		})
-	case config.LogFormatJSON:
-		logger.Logger.SetFormatter(&logrus.JSONFormatter{})
+	logger.ConfigureFormat(cfg.LogFormat)
+	logger.ConfigureLevel(cfg.LogLevel)
+
+	// allocate a new logger now that we are configured
+	log = logger.Function("main")
+
+	// do we have a URL to wait for?
+	if cfg.Url.String() == "" {
+		log.Fatal("no URL was specified; nothing to wait for")
 	}
 
 	// load secret
-	log.Info("Load secret")
+	log.Debug("Load secret")
 	cfg.LoadSecret()
 
 	// take a copy of the sanitized URL as a string
@@ -94,10 +103,18 @@ func main() {
 	}
 
 	// go wait!
-	log.Infof("Starting to wait for '%s', making at most %d attempts with a %s delay between each", urlStr, cfg.RetryLimit, cfg.RetryDelay.String())
+	log.Fields(map[string]interface{}{
+		"url":        urlStr,
+		"maxRetries": cfg.RetryLimit,
+		"retryDelay": cfg.RetryDelay.String(),
+	}).
+		Infof("Starting to wait")
 	err := waiter.Wait(cfg.Url, cfg.RetryDelay, cfg.RetryLimit)
 	if err != nil {
-		log.Fatalf("Error waiting for %s: %s; aborting...", urlStr, err)
+		log.Field("url", urlStr).
+			Err(err).
+			Fatal("Error waiting; aborting")
 	}
-	log.Infof("Successfully waited for %s; done.", urlStr)
+	log.Field("url", urlStr).
+		Info("Successfully waited; done.")
 }
