@@ -11,7 +11,9 @@ func SanitizedURLString(urlWithCreds url.URL) string {
 	log := logger.Function("SanitizedURLString")
 	clone, err := url.Parse(urlWithCreds.String())
 	if err != nil {
-		log.Errorf("unable to clone url: %s", err)
+		// The URL itself should not be logged unless credentials are removed
+		log.Err(err).
+			Error("unable to clone url")
 		return urlWithCreds.String()
 	}
 	if clone.User != nil {

@@ -34,7 +34,8 @@ func main() {
 	log.Field("version", AppVersion).
 		Warn("gowait - service readiness waiter")
 
-	log.Info("Load configuration")
+	log.Field("source", cfg.ConfigSource).
+		Info("Load configuration")
 	cm = configmap.New()
 	switch cfg.ConfigSource {
 	case config.ConfSourceEnv:
@@ -44,28 +45,29 @@ func main() {
 		err := cfg.LoadFromConfigMap(cm)
 		if err != nil {
 			log.Err(err).
-				Fatalf("unable to load configuration; aborting")
+				Fatal("unable to load configuration; aborting")
 		}
 	case config.ConfSourceJSON:
 		if cfg.ConfigFilename == "" {
-			log.Fatal("config source set to JSON but no config file specified; aborting...")
+			log.Fatal("config source set to JSON but no config file specified; aborting")
 		}
-		log.Field("configFilename", cfg.ConfigFilename).
-			Infof("initialize configuration from JSON file")
+		log.Field("file", cfg.ConfigFilename).
+			Info("initialize configuration from JSON file")
 		err := cfg.LoadFromJSON(cfg.ConfigFilename)
 		if err != nil {
-			log.Field("configFilename", cfg.ConfigFilename).
+			log.Field("file", cfg.ConfigFilename).
 				Err(err).
 				Fatal("unable to load configuration from JSON file; aborting")
 		}
 	case config.ConfSourceYAML:
 		if cfg.ConfigFilename == "" {
-			log.Fatal("config source set to YAML but no config file specified; aborting...")
+			log.Fatal("config source set to YAML but no config file specified; aborting")
 		}
-		log.Infof("initialize configuration from YAML file %s", cfg.ConfigFilename)
+		log.Field("file", cfg.ConfigFilename).
+			Info("initialize configuration from YAML file")
 		err := cfg.LoadFromYAML(cfg.ConfigFilename)
 		if err != nil {
-			log.Field("configFilename", cfg.ConfigFilename).
+			log.Field("file", cfg.ConfigFilename).
 				Err(err).
 				Fatal("unable to load configuration from YAML file; aborting")
 		}
@@ -75,13 +77,16 @@ func main() {
 	logger.ConfigureFormat(cfg.LogFormat)
 	logger.ConfigureLevel(cfg.LogLevel)
 
+	// allocate a new logger now that we are configured
+	log = logger.Function("main")
+
 	// do we have a URL to wait for?
 	if cfg.Url.String() == "" {
 		log.Fatal("no URL was specified; nothing to wait for")
 	}
 
 	// load secret
-	log.Info("Load secret")
+	log.Debug("Load secret")
 	cfg.LoadSecret()
 
 	// take a copy of the sanitized URL as a string
