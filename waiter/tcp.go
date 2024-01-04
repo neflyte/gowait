@@ -8,13 +8,13 @@ import (
 	"time"
 
 	"github.com/neflyte/gowait/config"
-	"github.com/neflyte/gowait/internal/logger"
+	"github.com/neflyte/gowait/lib/logger"
 )
 
 type tcpWaiter struct {
+	ticker    *time.Ticker
 	urlString string
 	attempts  int
-	ticker    *time.Ticker
 }
 
 func NewTCPWaiter() Waiter {

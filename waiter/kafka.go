@@ -7,17 +7,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Shopify/sarama"
+	"github.com/IBM/sarama"
 	"github.com/neflyte/gowait/config"
-	"github.com/neflyte/gowait/internal/logger"
+	"github.com/neflyte/gowait/lib/logger"
 )
 
 // url: kafka://broker1:port/?brokers=broker2:port,broker3:port...
 
 type kafkaWaiter struct {
+	ticker   *time.Ticker
 	brokers  []string
 	attempts int
-	ticker   *time.Ticker
 }
 
 func NewKafkaWaiter() Waiter {

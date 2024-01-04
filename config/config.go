@@ -2,14 +2,13 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/neflyte/configmap"
-	"github.com/neflyte/gowait/internal/logger"
+	"github.com/neflyte/gowait/lib/logger"
 	"gopkg.in/yaml.v3"
 )
 
@@ -60,29 +59,27 @@ var (
 
 // AppConfig represents the struct of application configuration info
 type AppConfig struct {
-	// internal fields
-	ConfigSource   string `yaml:"-" json:"-"`
-	ConfigFilename string `yaml:"-" json:"-"`
-	Secret         string `yaml:"-" json:"-"`
-	// data from the configuration file
 	Url            url.URL       `yaml:"url" json:"url"`
-	RetryDelay     time.Duration `yaml:"retryDelay" json:"retryDelay"`
-	RetryLimit     int           `yaml:"retryLimit" json:"retryLimit"`
+	ConfigSource   string        `yaml:"-" json:"-"`
+	ConfigFilename string        `yaml:"-" json:"-"`
+	Secret         string        `yaml:"-" json:"-"`
 	SecretSource   string        `yaml:"secretSource" json:"secretSource"`
 	SecretFilename string        `yaml:"secretFilename" json:"secretFilename"`
 	LogFormat      string        `yaml:"logFormat" json:"logFormat"`
 	LogLevel       string        `yaml:"logLevel" json:"logLevel"`
+	RetryDelay     time.Duration `yaml:"retryDelay" json:"retryDelay"`
+	RetryLimit     int           `yaml:"retryLimit" json:"retryLimit"`
 }
 
 // AppConfigFile represents the configuration struct in a flat file
 type AppConfigFile struct {
 	Url            string `yaml:"url" json:"url"`
 	RetryDelay     string `yaml:"retryDelay" json:"retryDelay"`
-	RetryLimit     int    `yaml:"retryLimit" json:"retryLimit"`
 	SecretSource   string `yaml:"secretSource" json:"secretSource"`
 	SecretFilename string `yaml:"secretFilename" json:"secretFilename"`
 	LogFormat      string `yaml:"logFormat" json:"logFormat"`
 	LogLevel       string `yaml:"logLevel" json:"logLevel"`
+	RetryLimit     int    `yaml:"retryLimit" json:"retryLimit"`
 }
 
 func ReadEnvironmentVariables(cm configmap.ConfigMap) {
@@ -191,7 +188,7 @@ func (ac *AppConfig) LoadFromYAML(fileName string) error {
 	log := logger.Function("LoadFromYAML")
 	log.Field("file", fileName).
 		Debug("reading YAML from file")
-	rawYaml, err := ioutil.ReadFile(fileName)
+	rawYaml, err := os.ReadFile(fileName)
 	if err != nil {
 		log.Err(err).
 			Field("file", fileName).
@@ -221,7 +218,7 @@ func (ac *AppConfig) LoadFromJSON(fileName string) error {
 	log := logger.Function("LoadFromJSON")
 	log.Field("file", fileName).
 		Debug("reading JSON from file")
-	rawJson, err := ioutil.ReadFile(fileName)
+	rawJson, err := os.ReadFile(fileName)
 	if err != nil {
 		log.Err(err).
 			Field("file", fileName).
@@ -258,7 +255,7 @@ func (ac *AppConfig) LoadSecret() {
 			ac.Secret = secretVal
 		}
 	case SecretSourceFile:
-		rawSecret, err := ioutil.ReadFile(ac.SecretFilename)
+		rawSecret, err := os.ReadFile(ac.SecretFilename)
 		if err != nil {
 			log.Err(err).
 				Field("file", ac.SecretFilename).
