@@ -9,7 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Merged the Windows makefile (`Makefile.win32`) into the default makefile
-- Minimum required version of `make` is v3.82
+- Minimum required version of GNU Make is v3.82
+- Minimum required version of Golang is v1.18
+- Update `Dockerfile` to use Golang v1.18 and to not install all OS updates
+- Update `build-docker` Makefile target to use `docker buildx` for building the container image
 
 ### Removed
 

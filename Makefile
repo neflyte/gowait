@@ -59,7 +59,7 @@ autofix-fieldalignment: ensure-fieldalignment
 	fieldalignment -fix ./...
 
 build-docker: lint
-	docker build --no-cache -t neflyte/gowait:latest .
+	docker buildx build -t neflyte/gowait:latest .
 
 deploy-test-kafka-helm: build-docker
 	helm upgrade kafka testdata/helm/v2/kafka/gowait-kafka --install --namespace default
