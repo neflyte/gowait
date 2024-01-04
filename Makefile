@@ -18,8 +18,7 @@ endif
 
 build:
 ifeq ($(OS),Windows_NT)
-	SET CGO_ENABLED=0
-	go build -ldflags "-s -w" -o bin\gowait.exe .\cmd\gowait
+	SET CGO_ENABLED=0 & go build -ldflags "-s -w" -o bin\gowait.exe .\cmd\gowait
 	upx -q bin\gowait.exe
 else
 	CGO_ENABLED=0 go build -ldflags "-s -w" -o bin/gowait ./cmd/gowait
