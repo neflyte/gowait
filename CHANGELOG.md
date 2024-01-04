@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5] - 2024-01-04
+### Added
+
+### Changed
+- Merged the Windows makefile (`Makefile.win32`) into the default makefile
+- Minimum required version of GNU Make is v3.82
+- Minimum required version of Golang is v1.18
+- Update `Dockerfile` to use Golang v1.18 and to not install all OS updates
+- Update `build-docker` Makefile target to use `docker buildx` for building the container image
+
+### Removed
+
 ## [0.1.4] - 2022-02-21
 ### Added
 - Add `go vet` to lint commands

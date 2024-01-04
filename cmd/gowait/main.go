@@ -6,13 +6,13 @@ import (
 
 	"github.com/neflyte/configmap"
 	"github.com/neflyte/gowait/config"
-	"github.com/neflyte/gowait/internal/logger"
-	"github.com/neflyte/gowait/internal/utils"
+	"github.com/neflyte/gowait/lib/logger"
+	"github.com/neflyte/gowait/lib/utils"
 	"github.com/neflyte/gowait/waiter"
 )
 
 const (
-	AppVersion = "v0.1.4"
+	AppVersion = "v0.1.5"
 )
 
 var (

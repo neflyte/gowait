@@ -9,8 +9,8 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/neflyte/gowait/config"
-	"github.com/neflyte/gowait/internal/logger"
-	"github.com/neflyte/gowait/internal/utils"
+	"github.com/neflyte/gowait/lib/logger"
+	"github.com/neflyte/gowait/lib/utils"
 )
 
 const (
@@ -18,10 +18,10 @@ const (
 )
 
 type postgresWaiter struct {
+	ticker     *time.Ticker
 	urlString  string
 	attempts   int
 	retryDelay time.Duration
-	ticker     *time.Ticker
 }
 
 func NewPostgresWaiter() Waiter {
